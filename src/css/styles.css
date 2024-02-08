@@ -128,7 +128,7 @@ span{
 }
 
 p{
-text-align: center;
+  text-align: center;
 }
 
 
@@ -137,7 +137,7 @@ text-align: center;
   height: 48px;
   border: 3px solid #FFF;
   border-radius: 50%;
-  display: block;
+  display: none;
   position: relative;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
@@ -166,5 +166,20 @@ text-align: center;
      transform: rotate(360deg);
    }}
 
-
+.load-button{
+  margin:40px auto;
+  font-family: inherit;
+  width: 125px;
+  height: 40px;
+  font-size: 16px;
+  color: #FFF;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  border-radius: 8px;
+  background-color: #4E75FF;
+  display: none;
+}
+.load-button:hover {
+  background-color: #6C8CFF;
+}
 
