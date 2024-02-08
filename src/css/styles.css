@@ -26,6 +26,7 @@
   width: 1128px;
   padding-left: 15px;
   padding-right: 15px;
+  padding-bottom: 50px;
   margin: 0 auto;
 }
 
@@ -99,7 +100,6 @@
   display: block;
   width: 360px;
   height: 200px;
-  
 }
 
 .gallery-item{
@@ -137,11 +137,11 @@ p{
   height: 48px;
   border: 3px solid #FFF;
   border-radius: 50%;
-  display: none;
+  display: block;
   position: relative;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
-
+  margin: 0 auto;
  }
 
  .loader::after {
@@ -177,9 +177,15 @@ p{
   line-height: 1.5;
   border-radius: 8px;
   background-color: #4E75FF;
-  display: none;
+  display: block;
 }
+
 .load-button:hover {
   background-color: #6C8CFF;
 }
 
+.hidden{
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+}

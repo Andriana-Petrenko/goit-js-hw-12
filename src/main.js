@@ -10,25 +10,21 @@ import closeIcon from './img/bi_x-octagon.png';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 
-const form = document.querySelector('form');
-const list = document.querySelector('.gallery');
-const spanLoader = document.querySelector('.loader');
-const loadButton = document.querySelector('.load-button');
-form.addEventListener('submit', onSearchButton);
+import {refs} from './refs';
 
-
+refs.form.addEventListener('submit', onSearchButton);
 // Controls the group number
 let page = 1;
-
-
-
+let inputSearch = '';
+let perPage = 15;
 
 // ----Event Searching photos----
 async function onSearchButton(e){
     e.preventDefault();
-    const inputSearch = form.elements.search.value.trim();
-    list.innerHTML = '';
-    loadButton.style.display = 'none';
+    inputSearch = refs.input.value.trim();
+    refs.list.innerHTML = '';
+    refs.loadButton.classList.add('hidden');
+    
     if (inputSearch === '') {
        return iziToast.error({
         messageColor: '#FFF',
@@ -37,23 +33,14 @@ async function onSearchButton(e){
         position: 'topRight',
         message: 'Please,enter what do you want to find!',
         });
-    }
-    spanLoader.style.display = 'block';
+    };
+
     try {
-        const { hits, totalHits} = await fetchPhotos(inputSearch, page);
-        // const totalPages = Math.ceil(totalHits / perPage);
-        
-        // Check the end of the collection
-//           if (page > totalPages) {
-//     return iziToast.error({
-//         position: "topRight",
-//         messageColor: '#FFF',
-//         color: '#EF4040',
-//         iconUrl: closeIcon,
-//         message: "We're sorry, but you've reached the end of search results"
-//     });
-//   }  
-    }
+        page = 1;
+        const { hits, totalHits } = await fetchPhotos(inputSearch, page);
+        renderPhoto(hits);
+        addLoadButton(totalHits);
+        }
     catch (error) {
         iziToast.error({
                 messageColor: '#FFF',
@@ -62,52 +49,55 @@ async function onSearchButton(e){
                 position: 'topRight',
                 message: `${error}`,
             })
-    }
-
-// ----Add an event handler for the "Load more" button----
-loadButton.addEventListener('click', async () => {
-    page += 1;
-    await fetchPhotos(inputSearch, page);})  
-    
+    } 
     simpleLightbox();
-    form.reset();
+    refs.form.reset(); 
 }
+
 
 // ----Promise function----
 async function fetchPhotos(inputSearch, page) {
-
+    refs.spanLoader.classList.remove('hidden');
     const response = await axios.get( 'https://pixabay.com/api/',{
       params: {
-       key: "42112521-3ff4dfc201bab0977369cd2bc",
+    key: "42112521-3ff4dfc201bab0977369cd2bc",
     q: `${inputSearch}`,
     image_type: "photo",
     orientation: "horizontal",
     safesearch: "true",
-    per_page: 15,
-    page: page
-      },
+    per_page: perPage,
+    page: page},
     });
     const { hits, totalHits } = response.data;
-    spanLoader.style.display = 'none';
-    renderPhoto(hits);
-    if (hits.length === 0) {
-        loadButton.style.display = 'none';
-        iziToast.error({
-            messageColor: '#FFF',
-            color: '#EF4040',
-            iconUrl: closeIcon,
-            position: 'topRight',
-            message: 'Sorry, there are no images matching your search query. Please try again!',
-        });
-    };
-    
+    refs.spanLoader.classList.add('hidden');
     return { hits, totalHits};
 }
 
+// ----Add an event handler for the "Load more" button----
+refs.loadButton.addEventListener('click', async () => {  
+    page++;
+    try {
+        const { hits, totalHits } = await fetchPhotos(inputSearch, page);
+        renderPhoto(hits);
+        smoothScroll();
+        noMoreLoadingPhotos(page,totalHits);
+    } catch (error) {
+        console.log(error);
+        iziToast.error({
+                messageColor: '#FFF',
+                color: '#EF4040',
+                iconUrl: closeIcon,
+                position: 'topRight',
+                message: `${error}`,
+            })
+    };
+    simpleLightbox();
+})
+
+
 // ----Markup HTML----
-function renderPhoto(photos) {
-    loadButton.style.display = 'block';
-    const markup = photos
+function renderPhoto(hits) {
+    const markup = hits
         .map(({ largeImageURL, webformatURL, tags, likes, views, comments, downloads }) =>
  `<li class='gallery-item'>
   <a class='gallery-link' href='${largeImageURL}'>
@@ -121,9 +111,51 @@ function renderPhoto(photos) {
 </div>
  </li>`)
         .join('');
-    list.insertAdjacentHTML('beforeend', markup);
+    refs.list.insertAdjacentHTML('beforeend', markup);
 }
 
+// ----smoothScroll----
+function smoothScroll() {
+  const { height: itemHeight } = document
+    .querySelector('.gallery-item').getBoundingClientRect();
+  window.scrollBy({
+    top: itemHeight * 2,
+    behavior: 'smooth',
+  });
+}
+
+// ---- Add 'Load more' button-----
+function addLoadButton(totalHits) {
+   const totalPages = Math.ceil(totalHits / perPage);     
+    if (totalPages>1) {
+       refs.loadButton.classList.remove('hidden'); 
+    };
+    if (totalHits === 0) {
+        iziToast.error({
+            messageColor: '#FFF',
+            color: '#EF4040',
+            iconUrl: closeIcon,
+            position: 'topRight',
+            message: 'Sorry, there are no images matching your search query. Please try again!',
+        });
+        };  
+}
+
+
+// ---- Check the end of the collection----
+function noMoreLoadingPhotos(page, totalHits) {
+    const totalPages = Math.ceil(totalHits / perPage);
+    if (page >totalPages) {
+        refs.loadButton.classList.add('hidden');
+        iziToast.error({
+        position: "topRight",
+        messageColor: '#FFF',
+        color: '#EF4040',
+        iconUrl: closeIcon,
+        message: "We're sorry, but you've reached the end of search results"
+    });
+  }   
+}
 
 // ----library simpleLightbox----
 function simpleLightbox(){
@@ -135,3 +167,4 @@ function simpleLightbox(){
     gallery.on('show.simpleLightbox');
     gallery.refresh();
 }
+
