@@ -23,6 +23,23 @@ refs.form.addEventListener('submit', onSearchButton);
 // ----Add an event handler for the "Load more" button----
 refs.loadButton.addEventListener('click', onLoadMoreButton)
 
+// ----Request function----
+async function getPhotos() {
+    refs.spanLoader.classList.remove('hidden');
+    const response = await axios.get( 'https://pixabay.com/api/',{
+        params: {
+            key: "42112521-3ff4dfc201bab0977369cd2bc",
+            q: `${inputSearch}`,
+            image_type: "photo",
+            orientation: "horizontal",
+            safesearch: "true",
+            per_page: perPage,
+            page: page},
+    });
+    const {hits, totalHits } = response.data;
+    refs.spanLoader.classList.add('hidden');
+    return {hits, totalHits};
+}
 
 // ----Event Searching photos----
 async function onSearchButton(e){
@@ -57,24 +74,6 @@ async function onSearchButton(e){
     } 
     simpleLightbox();
     refs.form.reset(); 
-}
-
-// ----Request function----
-async function getPhotos() {
-    refs.spanLoader.classList.remove('hidden');
-    const response = await axios.get( 'https://pixabay.com/api/',{
-        params: {
-            key: "42112521-3ff4dfc201bab0977369cd2bc",
-            q: `${inputSearch}`,
-            image_type: "photo",
-            orientation: "horizontal",
-            safesearch: "true",
-            per_page: perPage,
-            page: page},
-    });
-    const {hits, totalHits } = response.data;
-    refs.spanLoader.classList.add('hidden');
-    return {hits, totalHits};
 }
 
 // ----Event Loading photos----
@@ -128,15 +127,6 @@ function smoothScroll() {
   });
 }
 
-// ---- Add 'Load more' button-----
-function addLoadButton(totalHits) {
-   const totalPages = Math.ceil(totalHits / perPage);     
-    if (totalPages>1) {
-       refs.loadButton.classList.remove('hidden'); 
-    };
-     
-}
-
 // ----No request photos---- 
 function noPhotos(hits){
     if (hits.length === 0) {
@@ -150,21 +140,43 @@ function noPhotos(hits){
         });
         }; 
 }
+// ---- Add 'Load more' button-----
+function addLoadButton(totalHits) {
+   const totalPages = Math.ceil(totalHits / perPage);     
+    if (totalPages>1) {
+       refs.loadButton.classList.remove('hidden'); 
+    };
+     
+}
 
-// ---- Check the end of the collection----
+// ---- The end of the collection----
 function endOfCollection(page, totalHits) {
     const totalPages = Math.ceil(totalHits / perPage);
-    if (page >totalPages) {
-        refs.loadButton.classList.add('hidden');
-        iziToast.error({
-        position: "topRight",
-        messageColor: '#FFF',
-        color: '#EF4040',
-        iconUrl: closeIcon,
-        message: "We're sorry, but you've reached the end of search results"
-    });
-  }   
+    if (page>=totalPages) {
+        observer.observe(refs.list.lastChild);
+        refs.loadButton.classList.add('hidden'); 
+    } else {
+        observer.unobserve(refs.list.lastChild);
+    } 
 }
+
+const observer = new IntersectionObserver(onLastPage);
+function onLastPage(entries,observer) {
+    entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+            iziToast.error({
+                position: "topRight",
+                messageColor: '#FFF',
+                color: '#EF4040',
+                iconUrl: closeIcon,
+                message: "We're sorry, but you've reached the end of search results"
+        });
+    }
+      });
+   
+}
+
+
 
 // ----Library SimpleLightbox----
 function simpleLightbox(){
