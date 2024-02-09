@@ -12,19 +12,18 @@ import "simplelightbox/dist/simple-lightbox.min.css";
 
 import {refs} from './refs';
 
-refs.form.addEventListener('submit', onSearchButton);
 // Controls the group number
 let page = 1;
 let inputSearch = '';
 let perPage = 15;
 
+refs.form.addEventListener('submit', onSearchButton);
 // ----Event Searching photos----
 async function onSearchButton(e){
     e.preventDefault();
     inputSearch = refs.input.value.trim();
     refs.list.innerHTML = '';
     refs.loadButton.classList.add('hidden');
-    
     if (inputSearch === '') {
        return iziToast.error({
         messageColor: '#FFF',
@@ -34,10 +33,9 @@ async function onSearchButton(e){
         message: 'Please,enter what do you want to find!',
         });
     };
-
+    page = 1;
     try {
-        page = 1;
-        const { hits, totalHits } = await fetchPhotos(inputSearch, page);
+        const { hits, totalHits } = await fetchPhotos();
         renderPhoto(hits);
         addLoadButton(totalHits);
         }
@@ -54,9 +52,8 @@ async function onSearchButton(e){
     refs.form.reset(); 
 }
 
-
 // ----Promise function----
-async function fetchPhotos(inputSearch, page) {
+async function fetchPhotos() {
     refs.spanLoader.classList.remove('hidden');
     const response = await axios.get( 'https://pixabay.com/api/',{
       params: {
@@ -68,16 +65,16 @@ async function fetchPhotos(inputSearch, page) {
     per_page: perPage,
     page: page},
     });
-    const { hits, totalHits } = response.data;
+    const {hits, totalHits } = response.data;
     refs.spanLoader.classList.add('hidden');
-    return { hits, totalHits};
+    return {hits, totalHits};
 }
 
 // ----Add an event handler for the "Load more" button----
 refs.loadButton.addEventListener('click', async () => {  
     page++;
     try {
-        const { hits, totalHits } = await fetchPhotos(inputSearch, page);
+        const {hits, totalHits} = await fetchPhotos();
         renderPhoto(hits);
         smoothScroll();
         noMoreLoadingPhotos(page,totalHits);
@@ -93,7 +90,6 @@ refs.loadButton.addEventListener('click', async () => {
     };
     simpleLightbox();
 })
-
 
 // ----Markup HTML----
 function renderPhoto(hits) {
@@ -116,10 +112,9 @@ function renderPhoto(hits) {
 
 // ----smoothScroll----
 function smoothScroll() {
-  const { height: itemHeight } = document
-    .querySelector('.gallery-item').getBoundingClientRect();
+ const {height: itemHeight} = document.querySelector('.gallery-item').getBoundingClientRect();
   window.scrollBy({
-    top: itemHeight * 2,
+    top: itemHeight*2,
     behavior: 'smooth',
   });
 }
