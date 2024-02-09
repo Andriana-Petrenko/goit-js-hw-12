@@ -88,12 +88,12 @@ function onLastPage(entries,observer) {
 }
 
 // ----Library SimpleLightbox----
- export function simpleLightbox(){
-    let gallery = new SimpleLightbox('.gallery a',{
+let gallery = new SimpleLightbox('.gallery a', {
     captionsData: 'alt',
     captionsPosition: 'bottom',
     captionDelay: 250,
 });
+ export function simpleLightbox(){
     gallery.on('show.simpleLightbox');
     gallery.refresh();
 }
