@@ -12,7 +12,6 @@ import "simplelightbox/dist/simple-lightbox.min.css";
 
 import {refs} from './refs';
 
-// Controls the group number
 let page = 1;
 let inputSearch = '';
 let perPage = 15;
@@ -98,7 +97,6 @@ async function onSearchButton(e){
     simpleLightbox();
 }
 
-
 // ----Markup HTML----
 function renderPhoto(hits) {
     const markup = hits
@@ -130,7 +128,6 @@ function smoothScroll() {
 // ----No request photos---- 
 function noPhotos(hits){
     if (hits.length === 0) {
-        console.log('hello');
         iziToast.error({
             messageColor: '#FFF',
             color: '#EF4040',
@@ -140,6 +137,7 @@ function noPhotos(hits){
         });
         }; 
 }
+
 // ---- Add 'Load more' button-----
 function addLoadButton(totalHits) {
    const totalPages = Math.ceil(totalHits / perPage);     
@@ -160,6 +158,7 @@ function endOfCollection(page, totalHits) {
     } 
 }
 
+// ---- Add observer----
 const observer = new IntersectionObserver(onLastPage);
 function onLastPage(entries,observer) {
     entries.forEach((entry) => {
@@ -170,12 +169,11 @@ function onLastPage(entries,observer) {
                 color: '#EF4040',
                 iconUrl: closeIcon,
                 message: "We're sorry, but you've reached the end of search results"
-        });
-    }
-      });
+            });
+        }
+    });
    
 }
-
 
 
 // ----Library SimpleLightbox----
